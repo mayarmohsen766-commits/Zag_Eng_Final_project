@@ -76,3 +76,72 @@ public:
         for (Item* item : inventory) delete item;
     }
 };
+
+
+
+// ============================================================
+// CHARACTER SUBCLASSES
+// ============================================================
+
+// Warrior — Power Strike
+class Warrior : public Character {
+public:
+    Warrior(string name) : Character(name, 120, 20, 10, "Warrior") {}
+
+    void specialAttack(Character* target) override {
+        int dmg = (getAttack() * 2) - target->getDefense();
+        if (dmg < 1) dmg = 1;
+        cout << getName() << " uses [POWER STRIKE] on "
+             << target->getName() << " for " << dmg << " damage\n";
+        target->takeDamage(dmg);
+    }
+};
+
+// Mage — Expecto Patronum
+class Mage : public Character {
+private:
+    bool isProtected;
+public:
+    Mage(string name) : Character(name, 80, 25, 5, "Mage"), isProtected(false) {}
+
+    void takeDamage(int damage) override {
+        if (isProtected) {
+            cout << "Expecto Patronum shield absorbs the attack! "
+                 << getName() << " takes NO damage\n";
+            isProtected = false;
+        } else {
+            Character::takeDamage(damage);
+        }
+    }
+
+    void specialAttack(Character* target) override {
+        int dmg = (getAttack() / 4) - target->getDefense();
+        if (dmg < 1) dmg = 1;
+        cout << getName() << " casts [EXPECTO PATRONUM]\n";
+        cout << "  -> " << target->getName() << " takes " << dmg << " damage\n";
+        cout << "  -> " << getName() << " is now shielded from the next attack\n";
+        target->takeDamage(dmg);
+        isProtected = true;
+    }
+};
+
+// Archer — Double Shot
+class Archer : public Character {
+public:
+    Archer(string name) : Character(name, 95, 18, 7, "Archer") {}
+
+    void specialAttack(Character* target) override {
+        cout << getName() << " uses [DOUBLE SHOT]!\n";
+        for (int shot = 1; shot <= 2; shot++) {
+            if (!target->isAlive()) {
+                cout << target->getName() << " is already defeated!\n";
+                break;
+            }
+            int dmg = getAttack() - target->getDefense();
+            if (dmg < 1) dmg = 1;
+            cout << "  -> Shot " << shot << ": " << target->getName()
+                 << " takes " << dmg << " damage!\n";
+            target->takeDamage(dmg);
+        }
+    }
+};
