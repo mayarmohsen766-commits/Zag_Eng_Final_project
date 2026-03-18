@@ -159,3 +159,152 @@ public:
 };
 
 };
+
+// ============================================================
+// MAIN
+// ============================================================
+int main() {
+
+    cout << "\n";
+    printLine();
+    cout << "        *** RPG COMBAT SYSTEM ***\n";
+    printLine();
+
+    // ── Fighter 1 picks character ──
+    cout << "\n=== FIGHTER 1: Choose Your Character ===\n";
+    cout << "1. Warrior  (HP:120  ATK:20  DEF:10)  Special: Power Strike :damage = attackPower * 2\n";
+    cout << "2. Mage     (HP:80   ATK:25  DEF:5 )  Special: Expecto Patronum :light damage + shield for next hit\n";
+    cout << "3. Archer   (HP:95   ATK:18  DEF:7 )  Special: Double Shot:2 hits in a row\n";
+    cout << "4. Monster  (HP:150  ATK:22  DEF:8 )  Special: Fire Breath: normal damage + 15 bonus\n";
+    cout << "Choice (1-4): ";
+    int c1; cin >> c1;
+    while (c1 < 1 || c1 > 4) { cout << "Invalid! Enter 1-4: "; cin >> c1; }
+    Character* p1 = createCharacter(c1);
+    giveStartingItems(p1);
+    cout << ">> Fighter 1 chose: " << p1->charClass << "!\n";
+
+    // ── Fighter 2 picks character ──
+    cout << "\n=== FIGHTER 2: Choose Your Character ===\n";
+    cout << "1. Warrior  (HP:120  ATK:20  DEF:10)  Special: Power Strike :damage = attackPower * 2\n";
+    cout << "2. Mage     (HP:80   ATK:25  DEF:5 )  Special: Expecto Patronum :light damage + shield for next hit \n";
+    cout << "3. Archer   (HP:95   ATK:18  DEF:7 )  Special: Double Shot :2 hits in a row\n";
+    cout << "4. Monster  (HP:150  ATK:22  DEF:8 )  Special: Fire Breath: normal damage + 15 bonus\n";
+    cout << "Choice (1-4): ";
+    int c2; cin >> c2;
+    while (c2 < 1 || c2 > 4) { cout << "Invalid! Enter 1-4: "; cin >> c2; }
+    Character* p2 = createCharacter(c2);
+    giveStartingItems(p2);
+    cout << ">> Fighter 2 chose: " << p2->charClass << "!\n";
+
+
+
+    // ── Show starting inventories ──
+    cout << "\n"; printLine();
+    cout << "          STARTING INVENTORIES\n";
+    printLine();
+    cout << "Fighter 1 - ";
+    p1->showInventory();
+    cout << "\nFighter 2 - ";
+    p2->showInventory();
+
+    // ── Battle loop ──
+    BattleSystem battle(p1, p2);
+    Character* attacker = p1;
+    Character* defender = p2;
+    // Track which fighter number is attacking for display
+    int attackerNum = 1;
+    int round = 1;
+
+    while (!battle.isOver()) {
+
+        cout << "\n"; printLine();
+        cout << "  ROUND " << round << "\n";
+        printLine();
+
+        // Show both HP
+        cout << "\n";
+        cout << "Fighter 1 - "; p1->showStatus();
+        cout << "Fighter 2 - "; p2->showStatus();
+        cout << "\n";
+
+        // Show whose turn
+        cout << "--- Fighter " << attackerNum
+             << " (" << attacker->getName() << ")'s turn ---\n";
+        cout << "1. Basic Attack\n";
+        cout << "2. Special Attack\n";
+        cout << "3. Use Item\n";
+        cout << "Your choice: ";
+        int action; cin >> action;
+        while (action < 1 || action > 3) {
+            cout << "Invalid! Enter 1, 2, or 3: ";
+            cin >> action;
+        }
+
+        cout << "\n";
+
+        if (action == 1) {
+            attacker->basicAttack(defender);
+
+        } else if (action == 2) {
+            attacker->specialAttack(defender);
+
+        } else {
+            // Use Item
+            attacker->showInventory();
+            if (attacker->inventory.empty()) {
+                cout << "No items left! Turn skipped.\n";
+            } else {
+                cout << "Enter item number: ";
+                int idx; cin >> idx;
+                if (idx < 1 || idx > (int)attacker->inventory.size()) {
+                    cout << "[ERROR] Invalid number! Turn skipped.\n";
+                } else {
+                    attacker->inventory[idx-1]->use(attacker);
+                    attacker->removeItem(idx-1);
+                }
+            }
+        }
+
+        // Show defender HP after action
+        if (!battle.isOver()) {
+            int defNum = (attackerNum == 1) ? 2 : 1;
+            cout << "\n  Fighter " << defNum << " (" << defender->getName() << ")"
+                 << " HP: " << defender->getHealth()
+                 << "/" << defender->getMaxHP() << "\n";
+        }
+
+        if (battle.isOver()) break;
+
+        // Swap turns
+        if (attacker == p1) {
+            attacker = p2;  defender = p1;
+            attackerNum = 2;
+        } else {
+            attacker = p1;  defender = p2;
+            attackerNum = 1;
+            round++;
+        }
+    }
+
+    // ── Winner ──
+    cout << "\n"; printLine();
+    cout << "           BATTLE OVER!\n";
+    printLine();
+    cout << "\nFinal Status:\n";
+    cout << "Fighter 1 - "; p1->showStatus();
+    cout << "Fighter 2 - "; p2->showStatus();
+    cout << "\n";
+
+    Character* winner = battle.getWinner();
+    if (winner) {
+        int winNum = (winner == p1) ? 1 : 2;
+        cout << "*** Fighter " << winNum
+             << " (" << winner->getName() << ") WINS! ***\n";
+    }
+    printLine();
+
+    delete p1;
+    delete p2;
+    return 0;
+}
+
