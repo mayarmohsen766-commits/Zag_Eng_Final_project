@@ -144,4 +144,18 @@ public:
             target->takeDamage(dmg);
         }
     }
+// Monster — Fire Breath
+class Monster : public Character {
+public:
+    Monster(string name) : Character(name, 150, 22, 8, "Monster") {}
+
+    void specialAttack(Character* target) override {
+        int dmg = (getAttack() - target->getDefense()) + 15;
+        if (dmg < 1) dmg = 1;
+        cout << getName() << " unleashes [FIRE BREATH] on " << target->getName()
+             << " for " << dmg << " damage (+15 fire bonus)\n";
+        target->takeDamage(dmg);
+    }
+};
+
 };
